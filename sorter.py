@@ -64,13 +64,12 @@ def formate_matrix(
     return create_weight_matrix(padded_matrix)
 
 
-def solve_problem(n: int, m: int, p: int, k: int, w: int) -> Pulp_Lp_Problem:
+def solve_problem(n: int, m: int, p: int, k: int, w: int, a:npt.NDArray[npt.NDArray[pulp.LpVariable]]) -> Pulp_Lp_Problem:
     # We define a new problem
     prob = pulp.LpProblem("Assignment", pulp.LpMaximize)
 
     ## Constraints
     # Each subject must have k activities
-    global a
     for i in range(n):
         prob += pulp.lpSum(a[i, :]) == k
 
@@ -91,14 +90,9 @@ def solve_problem(n: int, m: int, p: int, k: int, w: int) -> Pulp_Lp_Problem:
     assert pulp.LpStatus[prob.solve()] == "Optimal"
     return prob
 
-
-### TEST PART
-
-if __name__ == "__main__":
-
+def main():
     ### INPUT
-    ranking = [[1, 2, 3], [1, 3, 2], [3, 1, 2], [2, 1, 3]]
-
+    ranking = [[1, 2, 3], [1], [3, 1], [2, 3, 1]]
     # number of places in each activity
     p = [2, 1, 1]
 
@@ -128,7 +122,7 @@ if __name__ == "__main__":
         for j in range(m):
             a[i, j] = pulp.LpVariable(f"a_{i}_{j}", cat=pulp.LpBinary)
 
-    prob = solve_problem(n, m, p, k, w)
+    prob = solve_problem(n, m, p, k, w, a)
     ###
     ### DISPLAY RESULTS
 
@@ -145,18 +139,5 @@ if __name__ == "__main__":
     print("Objective: ", pulp.value(prob.objective))
     ###
 
-    ### Sorting tests
-
-    ranking_bis = [[1, 2, 3], [1], [3, 1], [2, 3, 1]]
-
-    rk_ord = sort_ranking_by_activities(ranking_bis, 3)
-    # should return [[1. 2. 3.]
-    #               [1. 0. 0.]
-    #               [2. 0. 1.]
-    #               [3. 1. 2.]]
-    # for line 4 for example [2,3,1] means activity 2 is 1st choice, activity 3 is 2nd choice and activity 1 is 3rd choice, which gives [3,1,2] when each column is an activity
-
-    print("\nRanking bis : ")
-    print(ranking_bis)
-    print("\nRanking ordered :")
-    print(rk_ord)
+if __name__ == "__main__":
+    main()
